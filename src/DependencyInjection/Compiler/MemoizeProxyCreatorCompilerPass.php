@@ -24,7 +24,10 @@ use UnitEnum;
 
 final class MemoizeProxyCreatorCompilerPass implements CompilerPassInterface
 {
-    private ContainerBuilder $container;
+    /**
+     * @var \Symfony\Component\DependencyInjection\ContainerBuilder
+     */
+    private $container;
 
     public function process(ContainerBuilder $container): void
     {
@@ -114,10 +117,9 @@ final class MemoizeProxyCreatorCompilerPass implements CompilerPassInterface
      */
     private function getInterfacesString(ReflectionClass ...$interfaces): string
     {
-        return implode(', ', array_map(
-            fn (ReflectionClass $interface) => "\\{$interface->getName()}",
-            $interfaces,
-        ));
+        return implode(', ', array_map(function (ReflectionClass $interface) {
+            return "\\{$interface->getName()}";
+        }, $interfaces));
     }
 
     private function getConstructor(Definition $serviceDefinition): string
@@ -164,7 +166,7 @@ final class MemoizeProxyCreatorCompilerPass implements CompilerPassInterface
         $methodContent = "\tpublic function {$method->getName()}({$parameters}){$returnTypeString} {\n";
         $methodContent .= "\t\t\$cacheKey = '';\n";
         foreach ($parametersCall as $parameter) {
-            if (str_starts_with($parameter, '...')) {
+            if (strncmp($parameter, '...', strlen('...')) === 0) {
                 $parameter = substr($parameter, 3);
             }
             $methodContent .= "\t\t\$cacheKey .= serialize({$parameter});\n";
@@ -235,7 +237,7 @@ final class MemoizeProxyCreatorCompilerPass implements CompilerPassInterface
      *
      * @return T|null
      */
-    private function getAttribute(ReflectionMethod|ReflectionClass $target, string $attribute): ?object
+    private function getAttribute($target, string $attribute): ?object
     {
         $attributes = $target->getAttributes($attribute);
         if (!count($attributes)) {
@@ -272,7 +274,10 @@ final class MemoizeProxyCreatorCompilerPass implements CompilerPassInterface
         return $definitions;
     }
 
-    private function getType(ReflectionParameter|ReflectionType $parameter): string
+    /**
+     * @param \ReflectionParameter|\ReflectionType $parameter
+     */
+    private function getType($parameter): string
     {
         if ($parameter instanceof ReflectionType) {
             $type = $parameter;
@@ -286,7 +291,7 @@ final class MemoizeProxyCreatorCompilerPass implements CompilerPassInterface
         if ($type instanceof ReflectionNamedType) {
             if ($type->isBuiltin()) {
                 return (string) $type;
-            } elseif (str_starts_with($type, '?')) {
+            } elseif (strncmp($type, '?', strlen('?')) === 0) {
                 return "\\{$type->getName()}|null";
             }
 
@@ -301,10 +306,9 @@ final class MemoizeProxyCreatorCompilerPass implements CompilerPassInterface
             throw new LogicException(sprintf('Unknown type of parameter: %s', get_class($type)));
         }
 
-        $types = array_map(
-            fn (ReflectionNamedType $type) => $this->getType($type),
-            $type->getTypes(),
-        );
+        $types = array_map(function (ReflectionNamedType $type) {
+            return $this->getType($type);
+        }, $type->getTypes());
 
         return implode($separator, $types);
     }
@@ -324,7 +328,10 @@ final class MemoizeProxyCreatorCompilerPass implements CompilerPassInterface
         return $this->dumpVariable($defaultValue);
     }
 
-    private function dumpVariable(mixed $value): string
+    /**
+     * @param mixed $value
+     */
+    private function dumpVariable($value): string
     {
         if (is_string($value)) {
             return "'{$value}'";

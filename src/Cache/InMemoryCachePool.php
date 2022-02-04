@@ -13,7 +13,7 @@ final class InMemoryCachePool implements CacheItemPoolInterface
     /**
      * @var array<CacheItem>
      */
-    private array $items = [];
+    private $items = [];
 
     #[Pure]
     public function getItem(string $key): CacheItemInterface

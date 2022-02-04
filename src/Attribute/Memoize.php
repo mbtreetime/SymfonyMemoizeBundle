@@ -7,8 +7,12 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class Memoize
 {
-    public function __construct(
-        public readonly ?int $seconds = null,
-    ) {
+    /**
+     * @readonly
+     */
+    public ?int $seconds = null;
+    public function __construct(?int $seconds = null)
+    {
+        $this->seconds = $seconds;
     }
 }

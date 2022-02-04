@@ -10,11 +10,18 @@ use Psr\Cache\CacheItemInterface;
 final class CacheItem implements CacheItemInterface
 {
     private ?bool $isHit = null;
-
-    public function __construct(
-        private readonly string $key,
-        private mixed $value = null,
-    ) {
+    /**
+     * @readonly
+     */
+    private string $key;
+    private mixed $value = null;
+    /**
+     * @param mixed $value
+     */
+    public function __construct(string $key, $value = null)
+    {
+        $this->key = $key;
+        $this->value = $value;
     }
 
     public function getKey(): string
@@ -22,7 +29,10 @@ final class CacheItem implements CacheItemInterface
         return $this->key;
     }
 
-    public function get(): mixed
+    /**
+     * @return mixed
+     */
+    public function get()
     {
         return $this->value;
     }
@@ -32,19 +42,30 @@ final class CacheItem implements CacheItemInterface
         return (bool) $this->isHit;
     }
 
-    public function set(mixed $value): static
+    /**
+     * @param mixed $value
+     * @return $this
+     */
+    public function set($value)
     {
         $this->value = $value;
 
         return $this;
     }
 
-    public function expiresAt(?DateTimeInterface $expiration): static
+    /**
+     * @return $this
+     */
+    public function expiresAt(?DateTimeInterface $expiration)
     {
         return $this;
     }
 
-    public function expiresAfter(DateInterval|int|null $time): static
+    /**
+     * @param \DateInterval|int|null $time
+     * @return $this
+     */
+    public function expiresAfter($time)
     {
         return $this;
     }
